@@ -5,5 +5,8 @@ public enum OrderStatus {
     SENT,
     CONFIRMED,
     DELIVERED,
+    QUALITY_PASSED,
+    QUALITY_FAILED,
+    ACCEPTED,
     REJECTED
 }

@@ -29,8 +29,48 @@ public class SupplyOrder {
         items.put(productId, items.getOrDefault(productId, 0) + qty);
     }
 
-    public void markSent() { this.status = OrderStatus.SENT; }
-    public void markConfirmed() { this.status = OrderStatus.CONFIRMED; }
-    public void markDelivered() { this.status = OrderStatus.DELIVERED; }
-    public void markRejected() { this.status = OrderStatus.REJECTED; }
+    public void markSent() {
+        if (status != OrderStatus.CREATED)
+            throw new IllegalStateException("Поставка не может быть отправлена");
+        status = OrderStatus.SENT;
+    }
+
+    public void markConfirmed() {
+        if (status != OrderStatus.SENT)
+            throw new IllegalStateException("Поставка не может быть подтверждена");
+        status = OrderStatus.CONFIRMED;
+    }
+
+    public void markDelivered() {
+        if (status != OrderStatus.CONFIRMED)
+            throw new IllegalStateException("Поставка не может быть получена");
+        status = OrderStatus.DELIVERED;
+    }
+
+    public void checkQuality(boolean passed) {
+        if (status != OrderStatus.DELIVERED)
+            throw new IllegalStateException("Нельзя проверить качество до приемки");
+        status = passed ? OrderStatus.QUALITY_PASSED : OrderStatus.QUALITY_FAILED;
+    }
+
+    public void accept() {
+        if (status != OrderStatus.QUALITY_PASSED)
+            throw new IllegalStateException("Нельзя принять без успешной проверки");
+        status = OrderStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        if (status != OrderStatus.QUALITY_FAILED)
+            throw new IllegalStateException("Нельзя отклонить без проваленной проверки");
+        status = OrderStatus.REJECTED;
+    }
+
+    public void returnDefectiveDelivery() {
+        if (status != OrderStatus.REJECTED) {
+            throw new IllegalStateException(
+                    "Возврат брака возможен только для отклонённой поставки"
+            );
+        }
+        status = OrderStatus.SENT;
+    }
 }
